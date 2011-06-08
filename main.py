@@ -11,25 +11,39 @@ SCREEN_WIDTH = 640
 SCREEN_HEIGHT = 480
 
 class Dino(object):
-    pass
-
-class Game(object):
-    def __init__(self):
-        pygame.init()
-        self.screen = pygame.display.set_mode([SCREEN_WIDTH, SCREEN_HEIGHT])
-        pygame.display.set_caption("Dinos")
-        #self.clock = pygame.time.Clock()
-
-        self.game_font = pygame.font.Font(os.path.join("fonts", "04b_25__.ttf"), 36)
-        self.background = pygame.image.load('images/background_rex.png').convert()
-        self.intro_sound = pygame.mixer.Sound('sounds/intro.wav')
-        self.move_sound = pygame.mixer.Sound('sounds/fiu.ogg')
+    def __init__(self, screen):
+        self.screen = screen
         self.dino = pygame.image.load('images/tyrannosaurus_rex.png').convert_alpha()
-
-        self.dino_rect = self.dino.get_rect(
-                center=(
+        self.dino_rect = self.dino.get_rect(center=(
                     SCREEN_WIDTH - (self.dino.get_width() / 2),
                     SCREEN_HEIGHT / 2))
+
+    def draw_dino(self):
+        self.screen.blit(self.dino, self.dino_rect)
+        pygame.display.update()
+
+    def move(self, direction):
+        if direction == 'left':
+            multiplier = -1
+        else:
+            multiplier = 1
+        new_rect = self.dino_rect.move(0, 10 * multiplier)
+        if not (new_rect.collidepoint(SCREEN_WIDTH - 20, -10) or
+                new_rect.collidepoint(SCREEN_WIDTH - 20, SCREEN_HEIGHT + 10)):
+            self.dino_rect = new_rect
+        self.screen.blit(self.dino, self.dino_rect)
+        pygame.display.update()
+
+class Game(object):
+    def __init__(self, screen, dino):
+
+        self.screen = screen
+        self.game_font = pygame.font.Font(os.path.join("fonts", "04b_25__.ttf"), 36)
+        self.background = pygame.image.load('images/background_rex.png').convert()
+        self.dino = dino
+        self.intro_sound = pygame.mixer.Sound('sounds/intro.wav')
+        self.move_sound = pygame.mixer.Sound('sounds/fiu.ogg')
+
 
     def intro(self):
         self.screen.fill((0,0,0))
@@ -38,34 +52,15 @@ class Game(object):
         pygame.display.flip()
         self.intro_sound.play()
         pygame.time.wait(7000)
-        self.start_background()
+        self.draw_background()
         pygame.time.wait(8000)
-        self.start_dino()
+        self.dino.draw_dino()
         pygame.time.wait(7000)
 
-    def start_background(self):
+    def draw_background(self):
         self.screen.blit(self.background, (0, 0))
         pygame.display.update()
 
-    def start_dino(self):
-        self.screen.blit(self.dino, self.dino_rect)
-        pygame.display.update()
-
-
-    def move(self, direction, surface):
-        if direction == 'left':
-            multiplier = -1
-        else:
-            multiplier = 1
-        new_rect = self.dino_rect.move(0, 10 * multiplier)
-        if (new_rect.collidepoint(SCREEN_WIDTH - 20, -10) or
-                new_rect.collidepoint(SCREEN_WIDTH - 20, SCREEN_HEIGHT + 10)):
-            return
-        else:
-            self.dino_rect = new_rect
-            self.screen.blit(self.background, (0, 0))
-            self.screen.blit(self.dino, self.dino_rect)
-            pygame.display.update()
 
     def shutdown(self):
         self.screen.fill((0,0,0))
@@ -77,21 +72,29 @@ class Game(object):
 
 if __name__ == '__main__':
 
-    game = Game()
+    pygame.init()
+    screen = pygame.display.set_mode([SCREEN_WIDTH, SCREEN_HEIGHT])
+    pygame.display.set_caption("Dinos")
+
+    dino = Dino(screen)
+    game = Game(screen, dino)
+
     try:
         if sys.argv[1] == '-i':
             game.intro()
     except IndexError:
-        game.start_background()
-        game.start_dino()
+        game.draw_background()
+        dino.draw_dino()
     while True:
         for event in pygame.event.get(pygame.KEYDOWN):
             if event.key in (pygame.K_ESCAPE, pygame.K_q):
                 game.shutdown()
             elif event.key == pygame.K_DOWN:
                 game.move_sound.play()
-                game.move('right', game.dino)
+                game.draw_background()
+                dino.move('right')
             elif event.key == pygame.K_UP:
+                game.draw_background()
                 game.move_sound.play()
-                game.move('left', game.dino)
+                dino.move('left')
             pygame.event.clear()
