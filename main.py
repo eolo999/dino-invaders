@@ -3,12 +3,34 @@
 
 import sys
 import os
+from random import choice, randint
 
 import pygame
 from pygame.locals import *
 
 SCREEN_WIDTH = 640
 SCREEN_HEIGHT = 480
+
+FOES = ['brontosaurus32.png',
+        'pterodactyl32.png',
+        'stegosaurus32.png',
+        'triceratops32.png',
+        'tyrannosaurus_rex32.png']
+
+
+class Foe(object):
+    def __init__(self, screen):
+        self.screen = screen
+        path = os.path.join('images', choice(FOES))
+        self.foe = pygame.image.load(path).convert_alpha()
+        self.foe_rect = self.foe.get_rect(center=(
+            randint(16, SCREEN_WIDTH - 128),
+            randint(16, SCREEN_HEIGHT - 16)))
+
+    def draw_foe(self):
+        self.screen.blit(self.foe, self.foe_rect)
+        pygame.display.update()
+
 
 class Dino(object):
     def __init__(self, screen):
@@ -78,6 +100,11 @@ if __name__ == '__main__':
 
     dino = Dino(screen)
     game = Game(screen, dino)
+    foes = []
+
+    for n in range(10):
+        foe = Foe(screen)
+        foes.append(foe)
 
     try:
         if sys.argv[1] == '-i':
@@ -85,16 +112,20 @@ if __name__ == '__main__':
     except IndexError:
         game.draw_background()
         dino.draw_dino()
+        [foe.draw_foe() for foe in foes]
     while True:
+        pygame.time.wait(50)
         for event in pygame.event.get(pygame.KEYDOWN):
             if event.key in (pygame.K_ESCAPE, pygame.K_q):
                 game.shutdown()
             elif event.key == pygame.K_DOWN:
                 game.move_sound.play()
                 game.draw_background()
+                [foe.draw_foe() for foe in foes]
                 dino.move('right')
             elif event.key == pygame.K_UP:
                 game.draw_background()
                 game.move_sound.play()
+                [foe.draw_foe() for foe in foes]
                 dino.move('left')
             pygame.event.clear()
