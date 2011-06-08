@@ -10,6 +10,9 @@ from pygame.locals import *
 SCREEN_WIDTH = 640
 SCREEN_HEIGHT = 480
 
+class Dino(object):
+    pass
+
 class Game(object):
     def __init__(self):
         pygame.init()
@@ -54,10 +57,15 @@ class Game(object):
             multiplier = -1
         else:
             multiplier = 1
-        self.dino_rect = self.dino_rect.move(0, 20 * multiplier)
-        self.screen.blit(self.background, (0, 0))
-        self.screen.blit(self.dino, self.dino_rect)
-        pygame.display.update()
+        new_rect = self.dino_rect.move(0, 10 * multiplier)
+        if (new_rect.collidepoint(SCREEN_WIDTH - 20, -10) or
+                new_rect.collidepoint(SCREEN_WIDTH - 20, SCREEN_HEIGHT + 10)):
+            return
+        else:
+            self.dino_rect = new_rect
+            self.screen.blit(self.background, (0, 0))
+            self.screen.blit(self.dino, self.dino_rect)
+            pygame.display.update()
 
     def shutdown(self):
         self.screen.fill((0,0,0))
@@ -70,9 +78,10 @@ class Game(object):
 if __name__ == '__main__':
 
     game = Game()
-    if sys.argv[1] == '-i':
-        game.intro()
-    else:
+    try:
+        if sys.argv[1] == '-i':
+            game.intro()
+    except IndexError:
         game.start_background()
         game.start_dino()
     while True:
