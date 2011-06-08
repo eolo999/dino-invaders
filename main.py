@@ -17,6 +17,7 @@ FOES = ['brontosaurus32.png',
         'triceratops32.png',
         'tyrannosaurus_rex32.png']
 
+NUM_FOES = 16
 
 class Foe(object):
     def __init__(self, screen):
@@ -102,7 +103,7 @@ if __name__ == '__main__':
     game = Game(screen, dino)
     foes = []
 
-    for n in range(10):
+    for n in range(NUM_FOES):
         foe = Foe(screen)
         foes.append(foe)
 
@@ -114,7 +115,8 @@ if __name__ == '__main__':
         dino.draw_dino()
         [foe.draw_foe() for foe in foes]
     while True:
-        pygame.time.wait(50)
+        #pygame.time.delay(20)
+        pygame.time.wait(20)
         for event in pygame.event.get(pygame.KEYDOWN):
             if event.key in (pygame.K_ESCAPE, pygame.K_q):
                 game.shutdown()
