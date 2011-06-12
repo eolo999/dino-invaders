@@ -17,7 +17,8 @@ FOES = ['brontosaurus32.png',
         'triceratops32.png',
         'tyrannosaurus_rex32.png']
 
-NUM_FOES = 16
+NUM_FOES = 32
+
 
 class Foe(object):
     def __init__(self, screen):
@@ -25,37 +26,36 @@ class Foe(object):
         path = os.path.join('images', choice(FOES))
         self.foe = pygame.image.load(path).convert_alpha()
         self.foe_rect = self.foe.get_rect(center=(
-            randint(16, SCREEN_WIDTH - 128),
-            randint(16, SCREEN_HEIGHT - 16)))
+            randint(16, SCREEN_WIDTH - 8),
+            randint(16, SCREEN_HEIGHT - 130)))
 
     def draw_foe(self):
         self.screen.blit(self.foe, self.foe_rect)
-        pygame.display.update()
 
 
 class Dino(object):
     def __init__(self, screen):
         self.screen = screen
-        self.dino = pygame.image.load('images/tyrannosaurus_rex.png').convert_alpha()
+        self.screen_rect = self.screen.get_rect()
+        self.dino = pygame.image.load('images/tyrannosaurus_rex64.png').convert_alpha()
+        # Set dino starting position to the center of the bottom of the screen
         self.dino_rect = self.dino.get_rect(center=(
-                    SCREEN_WIDTH - (self.dino.get_width() / 2),
-                    SCREEN_HEIGHT / 2))
+                    SCREEN_WIDTH / 2,
+                    SCREEN_HEIGHT  - (self.dino.get_height() / 2)))
 
     def draw_dino(self):
         self.screen.blit(self.dino, self.dino_rect)
-        pygame.display.update()
 
     def move(self, direction):
         if direction == 'left':
             multiplier = -1
         else:
             multiplier = 1
-        new_rect = self.dino_rect.move(0, 10 * multiplier)
-        if not (new_rect.collidepoint(SCREEN_WIDTH - 20, -10) or
-                new_rect.collidepoint(SCREEN_WIDTH - 20, SCREEN_HEIGHT + 10)):
+        new_rect = self.dino_rect.move(10 * multiplier, 0)
+        # assign new position if dino is still inside the screen after moving
+        if self.screen_rect.contains(new_rect):
             self.dino_rect = new_rect
         self.screen.blit(self.dino, self.dino_rect)
-        pygame.display.update()
 
 class Game(object):
     def __init__(self, screen, dino):
@@ -76,13 +76,14 @@ class Game(object):
         self.intro_sound.play()
         pygame.time.wait(7000)
         self.draw_background()
+        pygame.display.update()
         pygame.time.wait(8000)
         self.dino.draw_dino()
+        pygame.display.update()
         pygame.time.wait(7000)
 
     def draw_background(self):
         self.screen.blit(self.background, (0, 0))
-        pygame.display.update()
 
 
     def shutdown(self):
@@ -114,20 +115,23 @@ if __name__ == '__main__':
         game.draw_background()
         dino.draw_dino()
         [foe.draw_foe() for foe in foes]
+        pygame.display.update()
     while True:
         #pygame.time.delay(20)
         pygame.time.wait(20)
         for event in pygame.event.get(pygame.KEYDOWN):
             if event.key in (pygame.K_ESCAPE, pygame.K_q):
                 game.shutdown()
-            elif event.key == pygame.K_DOWN:
+            elif event.key == pygame.K_RIGHT:
                 game.move_sound.play()
                 game.draw_background()
                 [foe.draw_foe() for foe in foes]
                 dino.move('right')
-            elif event.key == pygame.K_UP:
+                pygame.display.update()
+            elif event.key == pygame.K_LEFT:
                 game.draw_background()
                 game.move_sound.play()
                 [foe.draw_foe() for foe in foes]
                 dino.move('left')
+                pygame.display.update()
             pygame.event.clear()
