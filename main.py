@@ -20,7 +20,15 @@ FOES = ['brontosaurus32.png',
 NUM_FOES = 32
 
 
-class Foe(object):
+class Projectile(pygame.sprite.Sprite):
+    def __init__(self, screen):
+        self.screen = screen
+        self.bullet = pygame.image.load('images/burn.png')
+
+    def fire(self, dino_rect):
+        return self.bullet.get_rect(center=(dino_rect.centerx - 16, dino_rect.top - 10))
+
+class Foe(pygame.sprite.Sprite):
     def __init__(self, screen):
         self.screen = screen
         path = os.path.join('images', choice(FOES))
@@ -33,7 +41,7 @@ class Foe(object):
         self.screen.blit(self.foe, self.foe_rect)
 
 
-class Dino(object):
+class Dino(pygame.sprite.Sprite):
     def __init__(self, screen):
         self.screen = screen
         self.screen_rect = self.screen.get_rect()
@@ -42,6 +50,8 @@ class Dino(object):
         self.dino_rect = self.dino.get_rect(center=(
                     SCREEN_WIDTH / 2,
                     SCREEN_HEIGHT  - (self.dino.get_height() / 2)))
+        self.state = 'still'
+        self.projectile = Projectile(screen)
 
     def draw_dino(self):
         self.screen.blit(self.dino, self.dino_rect)
@@ -55,7 +65,12 @@ class Dino(object):
         # assign new position if dino is still inside the screen after moving
         if self.screen_rect.contains(new_rect):
             self.dino_rect = new_rect
+        self.state == 'moving'
         self.screen.blit(self.dino, self.dino_rect)
+
+    def fire(self):
+        self.screen.blit(self.dino, self.dino_rect)
+        self.screen.blit(self.projectile.bullet, self.projectile.fire(self.dino_rect))
 
 class Game(object):
     def __init__(self, screen, dino):
@@ -99,6 +114,7 @@ if __name__ == '__main__':
     pygame.init()
     screen = pygame.display.set_mode([SCREEN_WIDTH, SCREEN_HEIGHT])
     pygame.display.set_caption("Dinos")
+    pygame.key.set_repeat(20, 100)
 
     dino = Dino(screen)
     game = Game(screen, dino)
@@ -119,19 +135,27 @@ if __name__ == '__main__':
     while True:
         #pygame.time.delay(20)
         pygame.time.wait(20)
-        for event in pygame.event.get(pygame.KEYDOWN):
-            if event.key in (pygame.K_ESCAPE, pygame.K_q):
-                game.shutdown()
-            elif event.key == pygame.K_RIGHT:
-                game.move_sound.play()
-                game.draw_background()
-                [foe.draw_foe() for foe in foes]
-                dino.move('right')
-                pygame.display.update()
-            elif event.key == pygame.K_LEFT:
-                game.draw_background()
-                game.move_sound.play()
-                [foe.draw_foe() for foe in foes]
-                dino.move('left')
-                pygame.display.update()
-            pygame.event.clear()
+        for event in pygame.event.get():
+            if event.type == pygame.KEYDOWN:
+                if event.key in (pygame.K_ESCAPE, pygame.K_q):
+                    game.shutdown()
+                elif event.key == pygame.K_RIGHT:
+                    game.move_sound.play()
+                    game.draw_background()
+                    [foe.draw_foe() for foe in foes]
+                    dino.move('right')
+                    pygame.display.update()
+                elif event.key == pygame.K_LEFT:
+                    game.move_sound.play()
+                    game.draw_background()
+                    [foe.draw_foe() for foe in foes]
+                    dino.move('left')
+                    pygame.display.update()
+                elif event.key == pygame.K_SPACE:
+                    #game.fire_sound.play()
+                    game.draw_background()
+                    [foe.draw_foe() for foe in foes]
+                    dino.fire()
+                    pygame.display.update()
+            #pygame.event.pump()
+        #    pygame.event.clear()
