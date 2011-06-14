@@ -20,41 +20,42 @@ FOES = ['brontosaurus32.png',
 NUM_FOES = 32
 
 
+class Foes(pygame.sprite.Group):
+    pass
+
 
 class Foe(pygame.sprite.Sprite):
-    def __init__(self, screen):
-        self.screen = screen
+    def __init__(self):
+        super(Foe, self).__init__()
         path = os.path.join('images', choice(FOES))
-        self.foe = pygame.image.load(path).convert_alpha()
-        self.foe_rect = self.foe.get_rect(center=(
-            randint(16, SCREEN_WIDTH - 8),
+        self.image = pygame.image.load(path).convert_alpha()
+        self.rect = self.image.get_rect(center=(
+            randint(32, SCREEN_WIDTH - 24),
             randint(16, SCREEN_HEIGHT - 130)))
-
-    def draw_foe(self):
-        self.screen.blit(self.foe, self.foe_rect)
 
 
 class Projectile(pygame.sprite.Sprite):
     def __init__(self, screen):
         self.screen = screen
+        super(Projectile, self).__init__()
         self.screen_rect = self.screen.get_rect()
         self.fire_sound = pygame.mixer.Sound('sounds/roar.ogg')
-        self.bullet = pygame.image.load('images/burn.png')
-        self.bullet_rect = None
+        self.image = pygame.image.load('images/burn.png')
+        self.rect = self.image.get_rect()
         self.firing = False
 
     def fire(self, dino_rect):
         if not self.firing:
             self.firing = True
             self.fire_sound.play()
-            self.bullet_rect = self.bullet.get_rect(center=(dino_rect.centerx - 16, dino_rect.top - 10))
-            self.screen.blit(self.bullet, self.bullet_rect)
+            self.rect = self.image.get_rect(center=(dino_rect.centerx - 16, dino_rect.top - 10))
+            self.screen.blit(self.image, self.rect)
 
     def move(self):
-        new_rect = self.bullet_rect.move(0, -10)
+        new_rect = self.rect.move(0, -10)
         if self.screen_rect.contains(new_rect):
-            self.bullet_rect = new_rect
-            self.screen.blit(self.bullet, self.bullet_rect)
+            self.rect = new_rect
+            self.screen.blit(self.image, self.rect)
         else:
             self.firing = False
 
@@ -95,7 +96,10 @@ class Game(object):
         self.game_font = pygame.font.Font(os.path.join("fonts", "04b_25__.ttf"), 36)
         self.background = pygame.image.load('images/background_rex.png').convert()
         self.dino = dino
+        self.game_sound = pygame.mixer.Sound('sounds/foresta_nera.ogg')
+        self.game_sound.set_volume(0.2)
         self.intro_sound = pygame.mixer.Sound('sounds/intro.wav')
+        self.boom_sound = pygame.mixer.Sound('sounds/boom.ogg')
         self.move_sound = pygame.mixer.Sound('sounds/fiu.ogg')
 
 
@@ -130,15 +134,17 @@ if __name__ == '__main__':
     pygame.init()
     screen = pygame.display.set_mode([SCREEN_WIDTH, SCREEN_HEIGHT])
     pygame.display.set_caption("Dinos")
-    pygame.key.set_repeat(20, 100)
+    pygame.key.set_repeat(20, 50)
 
     dino = Dino(screen)
     game = Game(screen, dino)
-    foes = []
+    game.game_sound.play(loops=-1)
+    foes = Foes()
 
+    foes_list = []
     for n in range(NUM_FOES):
-        foe = Foe(screen)
-        foes.append(foe)
+        foe = Foe()
+        foe.add(foes)
 
     try:
         if sys.argv[1] == '-i':
@@ -146,29 +152,28 @@ if __name__ == '__main__':
     except IndexError:
         game.draw_background()
         dino.draw_dino()
-        [foe.draw_foe() for foe in foes]
+        foes.draw(screen)
         pygame.display.update()
     while True:
-        #pygame.time.delay(20)
         pygame.time.wait(20)
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN:
                 if event.key in (pygame.K_ESCAPE, pygame.K_q):
                     game.shutdown()
                 elif event.key == pygame.K_RIGHT:
-                    game.move_sound.play()
                     dino.move('right')
                 elif event.key == pygame.K_LEFT:
-                    game.move_sound.play()
                     dino.move('left')
                 elif event.key == pygame.K_SPACE:
                     dino.fire()
         # Loop operations
         game.draw_background()
-        [foe.draw_foe() for foe in foes]
+        foes.draw(screen)
         dino.draw_dino()
         if dino.projectile.firing:
             dino.projectile.move()
+        for foe in foes:
+            if foe.rect.colliderect(dino.projectile.rect):
+                game.boom_sound.play()
+                foe.kill()
         pygame.display.update()
-            #pygame.event.pump()
-            #pygame.event.clear()
