@@ -59,6 +59,9 @@ class Projectile(pygame.sprite.Sprite):
         else:
             self.firing = False
 
+    def destroy(self):
+        self.firing = False
+
 
 class Dino(pygame.sprite.Sprite):
     def __init__(self, screen):
@@ -93,11 +96,13 @@ class Game(object):
     def __init__(self, screen, dino):
 
         self.screen = screen
-        self.game_font = pygame.font.Font(os.path.join("fonts", "04b_25__.ttf"), 36)
+        self.score = 0
+        self.game_font = pygame.font.Font(os.path.join("fonts",
+            "04b_25__.ttf"), 24)
         self.background = pygame.image.load('images/background_rex.png').convert()
         self.dino = dino
         self.game_sound = pygame.mixer.Sound('sounds/foresta_nera.ogg')
-        self.game_sound.set_volume(0.2)
+        self.game_sound.set_volume(0.1)
         self.intro_sound = pygame.mixer.Sound('sounds/intro.wav')
         self.boom_sound = pygame.mixer.Sound('sounds/boom.ogg')
         self.move_sound = pygame.mixer.Sound('sounds/fiu.ogg')
@@ -129,12 +134,16 @@ class Game(object):
         pygame.time.wait(200)
         sys.exit()
 
+    def draw_score(self):
+        self.screen.blit(self.game_font.render(str(self.score), 0, (255, 255,
+            255)), (20, 20))
+
 if __name__ == '__main__':
 
     pygame.init()
     screen = pygame.display.set_mode([SCREEN_WIDTH, SCREEN_HEIGHT])
     pygame.display.set_caption("Dinos")
-    pygame.key.set_repeat(20, 50)
+    pygame.key.set_repeat(20, 20)
 
     dino = Dino(screen)
     game = Game(screen, dino)
@@ -154,8 +163,9 @@ if __name__ == '__main__':
         dino.draw_dino()
         foes.draw(screen)
         pygame.display.update()
-    while True:
+    while len(foes) > 0:
         pygame.time.wait(20)
+        # Input handlers
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN:
                 if event.key in (pygame.K_ESCAPE, pygame.K_q):
@@ -168,6 +178,7 @@ if __name__ == '__main__':
                     dino.fire()
         # Loop operations
         game.draw_background()
+        game.draw_score()
         foes.draw(screen)
         dino.draw_dino()
         if dino.projectile.firing:
@@ -175,5 +186,8 @@ if __name__ == '__main__':
         for foe in foes:
             if foe.rect.colliderect(dino.projectile.rect):
                 game.boom_sound.play()
+                game.score += 10
                 foe.kill()
+                dino.projectile.destroy()
         pygame.display.update()
+    game.shutdown()
