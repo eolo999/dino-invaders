@@ -20,6 +20,28 @@ class Foes(pygame.sprite.Group):
         super(Foes, self).__init__()
 
 
+class FoeProjectile(pygame.sprite.Sprite):
+    def __init__(self):
+        super(FoeProjectile, self).__init__()
+        self.fire_sound = pygame.mixer.Sound('sounds/roar.ogg')
+        self.image = pygame.image.load('images/invader_bullet.png')
+        self.rect = self.image.get_rect()
+
+    def fire(self, screen, foe_rect):
+        self.fire_sound.play()
+        self.rect = self.image.get_rect(center=(foe_rect.centerx ,
+            foe_rect.bottom + 10))
+        screen.blit(self.image, self.rect)
+
+    def move(self, screen):
+        new_rect = self.rect.move(0, 2)
+        if screen.get_rect().contains(new_rect):
+            self.rect = new_rect
+            screen.blit(self.image, self.rect)
+        else:
+            self.kill()
+
+
 class Projectile(pygame.sprite.Sprite):
     def __init__(self):
         super(Projectile, self).__init__()
@@ -52,6 +74,8 @@ class Foe(pygame.sprite.Sprite):
         else:
             self.rect = self.image.get_rect(center=center)
 
+        self.projectiles = Projectiles()
+        self.fire_power = 1
         self.speed = speed
         self.direction = direction
 
@@ -62,6 +86,13 @@ class Foe(pygame.sprite.Sprite):
         else:
             self.direction *= -1
             self.rect = self.rect.move(0, 32)
+
+    def fire(self, screen):
+        if randint(1,100) == 100 and len(self.projectiles) < self.fire_power:
+            projectile = FoeProjectile()
+            projectile.add(self.projectiles)
+            projectile.fire(screen, self.rect)
+
 
 class Level(object):
     def __init__(self, number):
@@ -126,7 +157,7 @@ class Dino(pygame.sprite.Sprite):
         self.dino_rect = self.dino.get_rect(center=(
                     SCREEN_WIDTH / 2,
                     SCREEN_HEIGHT  - (self.dino.get_height() / 2)))
-        self.speed = 1
+        self.speed = 2
         self.fire_power = 1
         self.can_fire = True
         self.projectiles = Projectiles()
@@ -186,6 +217,7 @@ def main_loop():
         game.dino.draw_dino(screen)
         for foe in game.level.foes:
             foe.move(screen)
+            foe.fire(screen)
             if foe.rect.colliderect(game.dino.dino_rect):
                 game.over(screen)
         game.level.foes.draw(screen)
@@ -197,6 +229,16 @@ def main_loop():
                     game.score += 10
                     foe.kill()
                     projectile.kill()
+        for foe in game.level.foes:
+            for projectile in foe.projectiles:
+                projectile.move(screen)
+                shrinked_rect = game.dino.dino_rect.inflate(-40, -40)
+                if shrinked_rect.colliderect(projectile.rect):
+                    print shrinked_rect
+                    print game.dino.dino_rect
+                    game.boom_sound.play()
+                    projectile.kill()
+                    game.over(screen)
                                                                                                     
         pygame.display.update()
 
