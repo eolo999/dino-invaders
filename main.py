@@ -25,13 +25,28 @@ class Foes(pygame.sprite.Group):
 
 
 class Foe(pygame.sprite.Sprite):
-    def __init__(self):
+    def __init__(self, path=None, center=None):
         super(Foe, self).__init__()
-        path = os.path.join('images', choice(FOES))
+        if path is None:
+            path = os.path.join('images', choice(FOES))
         self.image = pygame.image.load(path).convert_alpha()
-        self.rect = self.image.get_rect(center=(
-            randint(32, SCREEN_WIDTH - 24),
-            randint(16, SCREEN_HEIGHT - 130)))
+        if center is None:
+            self.rect = self.image.get_rect(center=(
+                randint(32, SCREEN_WIDTH - 24),
+                randint(16, SCREEN_HEIGHT - 130)))
+        else:
+            self.rect = self.image.get_rect(center=center)
+
+        self.direction = 1
+
+    def move(self, screen):
+        new_rect = self.rect.move(self.direction * 5, 0)
+        if screen.get_rect().contains(new_rect):
+            self.rect = new_rect
+        else:
+            self.direction *= -1
+            self.rect = self.rect.move(0, 5)
+
 
 
 class Projectile(pygame.sprite.Sprite):
@@ -179,6 +194,8 @@ if __name__ == '__main__':
         # Loop operations
         game.draw_background()
         game.draw_score()
+        for foe in foes.sprites():
+            foe.move(screen)
         foes.draw(screen)
         dino.draw_dino()
         if dino.projectile.firing:
