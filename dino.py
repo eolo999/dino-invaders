@@ -112,6 +112,12 @@ class Game(object):
         screen.blit(self.game_font.render(str(self.score), 0, (255, 255,
             255)), (20, 20))
 
+    def over(self, screen):
+        screen.blit(self.game_font.render("Game Over", 0, ((176, 0, 0))),
+                (250, SCREEN_HEIGHT / 2 - 36))
+        pygame.display.flip()
+        pygame.time.wait(200)
+        sys.exit()
 
 class Dino(pygame.sprite.Sprite):
     def __init__(self):
@@ -180,6 +186,8 @@ def main_loop():
         game.dino.draw_dino(screen)
         for foe in game.level.foes:
             foe.move(screen)
+            if foe.rect.colliderect(game.dino.dino_rect):
+                game.over(screen)
         game.level.foes.draw(screen)
         for projectile in game.dino.projectiles:
             projectile.move(screen)
