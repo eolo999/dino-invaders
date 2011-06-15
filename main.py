@@ -21,7 +21,8 @@ NUM_FOES = 32
 
 
 class Foes(pygame.sprite.Group):
-    pass
+    def __init__(self):
+        super(Foes, self).__init__()
 
 
 class Foe(pygame.sprite.Sprite):
@@ -46,7 +47,6 @@ class Foe(pygame.sprite.Sprite):
         else:
             self.direction *= -1
             self.rect = self.rect.move(0, 5)
-
 
 
 class Projectile(pygame.sprite.Sprite):
@@ -87,7 +87,6 @@ class Dino(pygame.sprite.Sprite):
         self.dino_rect = self.dino.get_rect(center=(
                     SCREEN_WIDTH / 2,
                     SCREEN_HEIGHT  - (self.dino.get_height() / 2)))
-        self.state = 'still'
         self.projectile = Projectile(screen)
 
     def draw_dino(self):
@@ -102,7 +101,6 @@ class Dino(pygame.sprite.Sprite):
         # assign new position if dino is still inside the screen after moving
         if self.screen_rect.contains(new_rect):
             self.dino_rect = new_rect
-        self.state == 'moving'
 
     def fire(self):
         self.projectile.fire(self.dino_rect)
@@ -122,7 +120,6 @@ class Game(object):
         self.boom_sound = pygame.mixer.Sound('sounds/boom.ogg')
         self.move_sound = pygame.mixer.Sound('sounds/fiu.ogg')
 
-
     def intro(self):
         self.screen.fill((0,0,0))
         self.screen.blit(self.game_font.render("Loading....", 0, ((176, 0, 0))),
@@ -139,7 +136,6 @@ class Game(object):
 
     def draw_background(self):
         self.screen.blit(self.background, (0, 0))
-
 
     def shutdown(self):
         self.screen.fill((0,0,0))
@@ -165,7 +161,6 @@ if __name__ == '__main__':
     game.game_sound.play(loops=-1)
     foes = Foes()
 
-    foes_list = []
     for n in range(NUM_FOES):
         foe = Foe()
         foe.add(foes)
@@ -174,10 +169,7 @@ if __name__ == '__main__':
         if sys.argv[1] == '-i':
             game.intro()
     except IndexError:
-        game.draw_background()
-        dino.draw_dino()
-        foes.draw(screen)
-        pygame.display.update()
+        pass
     while len(foes) > 0:
         pygame.time.wait(20)
         # Input handlers
@@ -194,7 +186,7 @@ if __name__ == '__main__':
         # Loop operations
         game.draw_background()
         game.draw_score()
-        for foe in foes.sprites():
+        for foe in foes:
             foe.move(screen)
         foes.draw(screen)
         dino.draw_dino()
