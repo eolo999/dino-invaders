@@ -42,7 +42,7 @@ class Projectile(pygame.sprite.Sprite):
 
 
 class Foe(pygame.sprite.Sprite):
-    def __init__(self, path=None, center=None, speed=1):
+    def __init__(self, path=None, center=None, speed=1, direction=1):
         super(Foe, self).__init__()
         if path is None:
             path = os.path.join('images', choice(FOES))
@@ -53,7 +53,7 @@ class Foe(pygame.sprite.Sprite):
             self.rect = self.image.get_rect(center=center)
 
         self.speed = speed
-        self.direction = 1
+        self.direction = direction
 
     def move(self, screen):
         new_rect = self.rect.move(self.direction * 5 * self.speed, 0)
@@ -61,16 +61,24 @@ class Foe(pygame.sprite.Sprite):
             self.rect = new_rect
         else:
             self.direction *= -1
-            self.rect = self.rect.move(0, 5)
+            self.rect = self.rect.move(0, 32)
 
 class Level(object):
     def __init__(self, number):
         self.foes = Foes()
         if number == 1:
-            foe_image_path = 'images/brontosaurus32.png'
             x_multiplier = SCREEN_WIDTH / 10
+            foe_image_path = 'images/pterodactyl32.png'
             for n in range(1, 10):
-                foe = Foe(foe_image_path, (n * x_multiplier, 16))
+                foe = Foe(foe_image_path, (n * x_multiplier, 96), 2)
+                foe.add(self.foes)
+                foe = Foe(foe_image_path, (n * x_multiplier, 128), 2, -1)
+                foe.add(self.foes)
+            foe_image_path = 'images/brontosaurus32.png'
+            for n in range(1, 10):
+                foe = Foe(foe_image_path, (n * x_multiplier, 192), 1)
+                foe.add(self.foes)
+                foe = Foe(foe_image_path, (n * x_multiplier, 224), 1, -1)
                 foe.add(self.foes)
 
 class Game(object):
@@ -113,7 +121,7 @@ class Dino(pygame.sprite.Sprite):
                     SCREEN_WIDTH / 2,
                     SCREEN_HEIGHT  - (self.dino.get_height() / 2)))
         self.speed = 1
-        self.fire_power = 2
+        self.fire_power = 1
         self.can_fire = True
         self.projectiles = Projectiles()
 
