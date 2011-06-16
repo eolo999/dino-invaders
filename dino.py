@@ -97,20 +97,21 @@ class Foe(pygame.sprite.Sprite):
 class Level(object):
     def __init__(self, number):
         self.foes = Foes()
-        if number == 1:
-            x_multiplier = SCREEN_WIDTH / 10
-            foe_image_path = 'images/pterodactyl32.png'
-            for n in range(1, 10):
-                foe = Foe(foe_image_path, (n * x_multiplier, 96), 2)
-                foe.add(self.foes)
-                foe = Foe(foe_image_path, (n * x_multiplier, 128), 2, -1)
-                foe.add(self.foes)
-            foe_image_path = 'images/brontosaurus32.png'
-            for n in range(1, 10):
-                foe = Foe(foe_image_path, (n * x_multiplier, 192), 1)
-                foe.add(self.foes)
-                foe = Foe(foe_image_path, (n * x_multiplier, 224), 1, -1)
-                foe.add(self.foes)
+        #if number == 1:
+        x_multiplier = SCREEN_WIDTH / (number * 3)
+        foe_image_path = 'images/pterodactyl32.png'
+        for n in range(1, number * 3):
+            foe = Foe(foe_image_path, (n * x_multiplier, number * 56), 2, level=number)
+            foe.add(self.foes)
+            foe = Foe(foe_image_path, (n * x_multiplier, 78), 2, -1, level=number)
+            foe.add(self.foes)
+        foe_image_path = 'images/brontosaurus32.png'
+        for n in range(1, number * 3):
+            foe = Foe(foe_image_path, (n * x_multiplier, 96), 1, level=number)
+            foe.add(self.foes)
+            foe = Foe(foe_image_path, (n * x_multiplier, 128), 1, -1, level=number)
+            foe.add(self.foes)
+
 
 class Game(object):
     def __init__(self):
@@ -144,6 +145,26 @@ class Game(object):
     def draw_score(self, screen):
         screen.blit(self.game_font.render(str(self.score), 0, (255, 255,
             255)), (20, 20))
+
+    def draw_lives(self, screen):
+        screen.blit(self.game_font.render("L: {0}".format(self.dino.num_lives_left), 0, (255, 255,
+            255)), (20, 50))
+
+    def next_level(self, screen):
+        self.num_level += 1
+        if self.num_level <= self.max_levels:
+            self.level = Level(self.num_level)
+        else:
+            self.display_in_center("Last level completed!\nGame over", screen)
+            pygame.time.wait(2000)
+            sys.exit()
+        self.display_in_center("Level {0}".format(self.num_level), screen)
+        pygame.time.wait(2000)
+  
+    def display_in_center(self, message, screen):
+        screen.blit(self.game_font.render(message, 0, ((176, 0, 0))),
+                                         (250, SCREEN_HEIGHT / 2 - 36))
+        pygame.display.flip()
 
     def over(self, screen):
         screen.blit(self.game_font.render("Game Over", 0, ((176, 0, 0))),
