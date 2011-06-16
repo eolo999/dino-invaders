@@ -64,7 +64,7 @@ class Projectile(pygame.sprite.Sprite):
 
 
 class Foe(pygame.sprite.Sprite):
-    def __init__(self, path=None, center=None, speed=1, direction=1):
+    def __init__(self, path=None, center=None, speed=0.2, direction=1, level=1):
         super(Foe, self).__init__()
         if path is None:
             path = os.path.join('images', choice(FOES))
@@ -75,12 +75,12 @@ class Foe(pygame.sprite.Sprite):
             self.rect = self.image.get_rect(center=center)
 
         self.projectiles = Projectiles()
-        self.fire_power = 1
+        self.fire_power = level - 1
         self.speed = speed
         self.direction = direction
 
     def move(self, screen):
-        new_rect = self.rect.move(self.direction * 5 * self.speed, 0)
+        new_rect = self.rect.move(self.direction * 1 * self.speed, 0)
         if screen.get_rect().contains(new_rect):
             self.rect = new_rect
         else:
@@ -116,6 +116,8 @@ class Game(object):
     def __init__(self):
         self.score = 0
         self.level = Level(1)
+        self.num_level = 1
+        self.max_levels = 10
         # Load graphics
         self.game_font = pygame.font.Font(os.path.join("fonts",
             "04b_25__.ttf"), 24)
@@ -158,7 +160,7 @@ class Dino(pygame.sprite.Sprite):
                     SCREEN_WIDTH / 2,
                     SCREEN_HEIGHT  - (self.dino.get_height() / 2)))
         self.speed = 2
-        self.fire_power = 1
+        self.fire_power = 3
         self.can_fire = True
         self.projectiles = Projectiles()
 
