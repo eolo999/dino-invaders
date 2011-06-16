@@ -67,10 +67,12 @@ class Foe(pygame.sprite.Sprite):
     def __init__(self, path=None, center=None, speed=0.2, direction=1, level=1):
         super(Foe, self).__init__()
         if path is None:
+            fn = choice(FOES)
             path = os.path.join('images', choice(FOES))
+            self.type = fn
         self.image = pygame.image.load(path).convert_alpha()
         if center is None:
-            center = (randint(32, SCREEN_WIDTH - 24), randint(16, SCREEN_HEIGHT - 130))
+            center = (randint(32, SCREEN_WIDTH - 24), randint(16, SCREEN_HEIGHT - 80))
         else:
             self.rect = self.image.get_rect(center=center)
 
