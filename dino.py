@@ -64,23 +64,25 @@ class Projectile(pygame.sprite.Sprite):
 
 
 class Foe(pygame.sprite.Sprite):
-    def __init__(self, path=None, center=None, speed=1, direction=1):
+    def __init__(self, path=None, center=None, speed=0.2, direction=1, level=1):
         super(Foe, self).__init__()
         if path is None:
+            fn = choice(FOES)
             path = os.path.join('images', choice(FOES))
+            self.type = fn
         self.image = pygame.image.load(path).convert_alpha()
         if center is None:
-            center = (randint(32, SCREEN_WIDTH - 24), randint(16, SCREEN_HEIGHT - 130))
+            center = (randint(32, SCREEN_WIDTH - 24), randint(16, SCREEN_HEIGHT - 80))
         else:
             self.rect = self.image.get_rect(center=center)
 
         self.projectiles = Projectiles()
-        self.fire_power = 1
+        self.fire_power = level - 1
         self.speed = speed
         self.direction = direction
 
     def move(self, screen):
-        new_rect = self.rect.move(self.direction * 5 * self.speed, 0)
+        new_rect = self.rect.move(self.direction * 1 * self.speed, 0)
         if screen.get_rect().contains(new_rect):
             self.rect = new_rect
         else:
@@ -97,25 +99,28 @@ class Foe(pygame.sprite.Sprite):
 class Level(object):
     def __init__(self, number):
         self.foes = Foes()
-        if number == 1:
-            x_multiplier = SCREEN_WIDTH / 10
-            foe_image_path = 'images/pterodactyl32.png'
-            for n in range(1, 10):
-                foe = Foe(foe_image_path, (n * x_multiplier, 96), 2)
-                foe.add(self.foes)
-                foe = Foe(foe_image_path, (n * x_multiplier, 128), 2, -1)
-                foe.add(self.foes)
-            foe_image_path = 'images/brontosaurus32.png'
-            for n in range(1, 10):
-                foe = Foe(foe_image_path, (n * x_multiplier, 192), 1)
-                foe.add(self.foes)
-                foe = Foe(foe_image_path, (n * x_multiplier, 224), 1, -1)
-                foe.add(self.foes)
+        #if number == 1:
+        x_multiplier = SCREEN_WIDTH / (number * 3)
+        foe_image_path = 'images/pterodactyl32.png'
+        for n in range(1, number * 3):
+            foe = Foe(foe_image_path, (n * x_multiplier, number * 56), 2, level=number)
+            foe.add(self.foes)
+            foe = Foe(foe_image_path, (n * x_multiplier, 78), 2, -1, level=number)
+            foe.add(self.foes)
+        foe_image_path = 'images/brontosaurus32.png'
+        for n in range(1, number * 3):
+            foe = Foe(foe_image_path, (n * x_multiplier, 96), 1, level=number)
+            foe.add(self.foes)
+            foe = Foe(foe_image_path, (n * x_multiplier, 128), 1, -1, level=number)
+            foe.add(self.foes)
+
 
 class Game(object):
     def __init__(self):
         self.score = 0
         self.level = Level(1)
+        self.num_level = 1
+        self.max_levels = 10
         # Load graphics
         self.game_font = pygame.font.Font(os.path.join("fonts",
             "04b_25__.ttf"), 24)
@@ -123,7 +128,13 @@ class Game(object):
         # Load sounds
         self.game_sound = pygame.mixer.Sound('sounds/foresta_nera.ogg')
         self.game_sound.set_volume(0.1)
+        self.over_sound = pygame.mixer.Sound('sounds/over.wav')
+        self.wound_sound1 = pygame.mixer.Sound('sounds/wound.wav')
+        self.wound_sound2 = pygame.mixer.Sound('sounds/wound.ogg')
+        self.game_sound.set_volume(2)
         self.boom_sound = pygame.mixer.Sound('sounds/boom.ogg')
+        self.drop1 = pygame.mixer.Sound('sounds/drop1.wav')
+        self.drop2 = pygame.mixer.Sound('sounds/drop2.wav')
         self.move_sound = pygame.mixer.Sound('sounds/fiu.ogg')
         # Load "Dino"
         self.dino = Dino()
@@ -143,6 +154,26 @@ class Game(object):
         screen.blit(self.game_font.render(str(self.score), 0, (255, 255,
             255)), (20, 20))
 
+    def draw_lives(self, screen):
+        screen.blit(self.game_font.render("L: {0}".format(self.dino.num_lives_left), 0, (255, 255,
+            255)), (20, 50))
+
+    def next_level(self, screen):
+        self.num_level += 1
+        if self.num_level <= self.max_levels:
+            self.level = Level(self.num_level)
+        else:
+            self.display_in_center("Last level completed!\nGame over", screen)
+            pygame.time.wait(2000)
+            sys.exit()
+        self.display_in_center("Level {0}".format(self.num_level), screen)
+        pygame.time.wait(2000)
+  
+    def display_in_center(self, message, screen):
+        screen.blit(self.game_font.render(message, 0, ((176, 0, 0))),
+                                         (250, SCREEN_HEIGHT / 2 - 36))
+        pygame.display.flip()
+
     def over(self, screen):
         screen.blit(self.game_font.render("Game Over", 0, ((176, 0, 0))),
                 (250, SCREEN_HEIGHT / 2 - 36))
@@ -152,13 +183,16 @@ class Game(object):
 
 class Dino(pygame.sprite.Sprite):
     def __init__(self):
-        self.dino = pygame.image.load('images/tyrannosaurus_rex64.png').convert_alpha()
+        self.dinoR = pygame.image.load('images/tyrannosaurus_rex64.png').convert_alpha()
+        self.dinoL = pygame.image.load('images/tyrannosaurus_rex64_m.png').convert_alpha()
+        self.dino = self.dinoR
+        self.num_lives_left = 2
         # Set dino starting position to the center of the bottom of the screen
         self.dino_rect = self.dino.get_rect(center=(
                     SCREEN_WIDTH / 2,
                     SCREEN_HEIGHT  - (self.dino.get_height() / 2)))
         self.speed = 2
-        self.fire_power = 1
+        self.fire_power = 3
         self.can_fire = True
         self.projectiles = Projectiles()
 
@@ -167,8 +201,10 @@ class Dino(pygame.sprite.Sprite):
 
     def move(self, screen, direction):
         if direction == 'left':
+            self.dino = self.dinoR
             multiplier = -1
         else:
+            self.dino = self.dinoL
             multiplier = 1
         new_rect = self.dino_rect.move(self.speed * 5 * multiplier, 0)
         # assign new position if dino is still inside the screen after moving
@@ -202,8 +238,11 @@ def main_loop():
                     game.shutdown(screen)
                 elif event.key == pygame.K_RIGHT:
                     game.dino.move(screen, 'right')
+                    game.drop2.play()
                 elif event.key == pygame.K_LEFT:
                     game.dino.move(screen, 'left')
+                    game.drop1.play()
+                    
                 elif event.key == pygame.K_SPACE:
                     if game.dino.can_fire:
                         game.dino.fire(screen)
@@ -214,11 +253,17 @@ def main_loop():
         # Loop operations
         game.draw_background(screen)
         game.draw_score(screen)
+        game.draw_lives(screen)
         game.dino.draw_dino(screen)
+        if len(game.level.foes) == 0:
+            pygame.time.wait(1000)
+            game.next_level(screen)
+            game.dino.num_lives_left += 1
         for foe in game.level.foes:
             foe.move(screen)
             foe.fire(screen)
             if foe.rect.colliderect(game.dino.dino_rect):
+                game.over_sound.play()
                 game.over(screen)
         game.level.foes.draw(screen)
         for projectile in game.dino.projectiles:
@@ -238,8 +283,15 @@ def main_loop():
                     print game.dino.dino_rect
                     game.boom_sound.play()
                     projectile.kill()
-                    game.over(screen)
-                                                                                                    
+                    if game.dino.num_lives_left > 0:
+                        game.dino.num_lives_left-= 1
+                        game.wound_sound1.play()
+                        game.wound_sound2.play()
+                        pygame.time.wait(300)
+                    else:
+                        game.over_sound.play()
+                        pygame.time.wait(1000)
+                        game.over(screen)
         pygame.display.update()
 
 if __name__ == '__main__':
