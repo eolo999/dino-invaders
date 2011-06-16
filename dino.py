@@ -126,7 +126,13 @@ class Game(object):
         # Load sounds
         self.game_sound = pygame.mixer.Sound('sounds/foresta_nera.ogg')
         self.game_sound.set_volume(0.1)
+        self.over_sound = pygame.mixer.Sound('sounds/over.wav')
+        self.wound_sound1 = pygame.mixer.Sound('sounds/wound.wav')
+        self.wound_sound2 = pygame.mixer.Sound('sounds/wound.ogg')
+        self.game_sound.set_volume(2)
         self.boom_sound = pygame.mixer.Sound('sounds/boom.ogg')
+        self.drop1 = pygame.mixer.Sound('sounds/drop1.wav')
+        self.drop2 = pygame.mixer.Sound('sounds/drop2.wav')
         self.move_sound = pygame.mixer.Sound('sounds/fiu.ogg')
         # Load "Dino"
         self.dino = Dino()
@@ -245,11 +251,17 @@ def main_loop():
         # Loop operations
         game.draw_background(screen)
         game.draw_score(screen)
+        game.draw_lives(screen)
         game.dino.draw_dino(screen)
+        if len(game.level.foes) == 0:
+            pygame.time.wait(1000)
+            game.next_level(screen)
+            game.dino.num_lives_left += 1
         for foe in game.level.foes:
             foe.move(screen)
             foe.fire(screen)
             if foe.rect.colliderect(game.dino.dino_rect):
+                game.over_sound.play()
                 game.over(screen)
         game.level.foes.draw(screen)
         for projectile in game.dino.projectiles:
@@ -269,8 +281,15 @@ def main_loop():
                     print game.dino.dino_rect
                     game.boom_sound.play()
                     projectile.kill()
-                    game.over(screen)
-                                                                                                    
+                    if game.dino.num_lives_left > 0:
+                        game.dino.num_lives_left-= 1
+                        game.wound_sound1.play()
+                        game.wound_sound2.play()
+                        pygame.time.wait(300)
+                    else:
+                        game.over_sound.play()
+                        pygame.time.wait(1000)
+                        game.over(screen)
         pygame.display.update()
 
 if __name__ == '__main__':
