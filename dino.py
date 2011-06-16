@@ -154,7 +154,10 @@ class Game(object):
 
 class Dino(pygame.sprite.Sprite):
     def __init__(self):
-        self.dino = pygame.image.load('images/tyrannosaurus_rex64.png').convert_alpha()
+        self.dinoR = pygame.image.load('images/tyrannosaurus_rex64.png').convert_alpha()
+        self.dinoL = pygame.image.load('images/tyrannosaurus_rex64_m.png').convert_alpha()
+        self.dino = self.dinoR
+        self.num_lives_left = 2
         # Set dino starting position to the center of the bottom of the screen
         self.dino_rect = self.dino.get_rect(center=(
                     SCREEN_WIDTH / 2,
@@ -169,8 +172,10 @@ class Dino(pygame.sprite.Sprite):
 
     def move(self, screen, direction):
         if direction == 'left':
+            self.dino = self.dinoR
             multiplier = -1
         else:
+            self.dino = self.dinoL
             multiplier = 1
         new_rect = self.dino_rect.move(self.speed * 5 * multiplier, 0)
         # assign new position if dino is still inside the screen after moving
@@ -204,8 +209,11 @@ def main_loop():
                     game.shutdown(screen)
                 elif event.key == pygame.K_RIGHT:
                     game.dino.move(screen, 'right')
+                    game.drop2.play()
                 elif event.key == pygame.K_LEFT:
                     game.dino.move(screen, 'left')
+                    game.drop1.play()
+                    
                 elif event.key == pygame.K_SPACE:
                     if game.dino.can_fire:
                         game.dino.fire(screen)
