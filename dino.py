@@ -9,6 +9,11 @@ from pygame.locals import *
 SCREEN_WIDTH = 640
 SCREEN_HEIGHT = 480
 
+FOES = ['brontosaurus32.png',
+        'pterodactyl32.png',
+        'stegosaurus32.png',
+        'triceratops32.png',
+        'tyrannosaurus_rex32.png']
 
 class Projectiles(pygame.sprite.Group):
     def __init__(self):
