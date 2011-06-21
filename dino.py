@@ -99,7 +99,7 @@ class Foe(pygame.sprite.Sprite):
             self.rect = self.rect.move(0, 32)
 
     def fire(self, screen):
-        if randint(1,100) == 100 and len(Foe.foe_projectiles) < Foe.fire_power:
+        if len(Foe.foe_projectiles) < Foe.fire_power and randint(1,100) == 100:
             projectile = FoeProjectile()
             projectile.add(Foe.foe_projectiles)
             projectile.fire(screen, self.rect)
