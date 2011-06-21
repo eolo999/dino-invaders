@@ -19,6 +19,9 @@ class Projectiles(pygame.sprite.Group):
     def __init__(self):
         super(Projectiles, self).__init__()
 
+class FoeProjectiles(pygame.sprite.Group):
+    def __init__(self):
+        super(FoeProjectiles, self).__init__()
 
 class Foes(pygame.sprite.Group):
     def __init__(self):
@@ -69,6 +72,9 @@ class Projectile(pygame.sprite.Sprite):
 
 
 class Foe(pygame.sprite.Sprite):
+    foe_projectiles = FoeProjectiles()
+    fire_power = 5
+
     def __init__(self, path=None, center=None, speed=0.2, direction=1, level=1):
         super(Foe, self).__init__()
         if path is None:
@@ -81,8 +87,6 @@ class Foe(pygame.sprite.Sprite):
         else:
             self.rect = self.image.get_rect(center=center)
 
-        self.projectiles = Projectiles()
-        self.fire_power = level - 1
         self.speed = speed
         self.direction = direction
 
@@ -95,9 +99,9 @@ class Foe(pygame.sprite.Sprite):
             self.rect = self.rect.move(0, 32)
 
     def fire(self, screen):
-        if randint(1,100) == 100 and len(self.projectiles) < self.fire_power:
+        if randint(1,100) == 100 and len(Foe.foe_projectiles) < Foe.fire_power:
             projectile = FoeProjectile()
-            projectile.add(self.projectiles)
+            projectile.add(Foe.foe_projectiles)
             projectile.fire(screen, self.rect)
 
 
@@ -165,6 +169,7 @@ class Game(object):
 
     def next_level(self, screen):
         self.num_level += 1
+        Foe.fire_power += 2
         if self.num_level <= self.max_levels:
             self.level = Level(self.num_level)
         else:
@@ -279,24 +284,21 @@ def main_loop():
                     game.score += 10
                     foe.kill()
                     projectile.kill()
-        for foe in game.level.foes:
-            for projectile in foe.projectiles:
-                projectile.move(screen)
-                shrinked_rect = game.dino.dino_rect.inflate(-40, -40)
-                if shrinked_rect.colliderect(projectile.rect):
-                    print shrinked_rect
-                    print game.dino.dino_rect
-                    game.boom_sound.play()
-                    projectile.kill()
-                    if game.dino.num_lives_left > 0:
-                        game.dino.num_lives_left-= 1
-                        game.wound_sound1.play()
-                        game.wound_sound2.play()
-                        pygame.time.wait(300)
-                    else:
-                        game.over_sound.play()
-                        pygame.time.wait(1000)
-                        game.over(screen)
+        for projectile in Foe.foe_projectiles:
+            projectile.move(screen)
+            shrinked_rect = game.dino.dino_rect.inflate(-40, -40)
+            if shrinked_rect.colliderect(projectile.rect):
+                game.boom_sound.play()
+                projectile.kill()
+                if game.dino.num_lives_left > 0:
+                    game.dino.num_lives_left-= 1
+                    game.wound_sound1.play()
+                    game.wound_sound2.play()
+                    pygame.time.wait(300)
+                else:
+                    game.over_sound.play()
+                    pygame.time.wait(1000)
+                    game.over(screen)
         pygame.display.update()
 
 if __name__ == '__main__':
