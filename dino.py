@@ -266,6 +266,7 @@ def main_loop():
         game.draw_lives(screen)
         game.dino.draw_dino(screen)
         if len(game.level.foes) == 0:
+            pygame.display.update()
             pygame.time.wait(1000)
             game.next_level(screen)
             game.dino.num_lives_left += 1
