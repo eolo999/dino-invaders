@@ -54,7 +54,7 @@ class Projectile(pygame.sprite.Sprite):
         self.screen = screen
         super(Projectile, self).__init__()
         self.screen_rect = self.screen.get_rect()
-        self.fire_sound = pygame.mixer.Sound('sounds/roar.ogg')
+        self.fire_sound = pygame.mixer.Sound('sounds/click.wav')
         self.image = pygame.image.load('images/burn.png')
         self.rect = self.image.get_rect()
         self.firing = False
@@ -114,10 +114,10 @@ class Game(object):
             "04b_25__.ttf"), 24)
         self.background = pygame.image.load('images/background_rex.png').convert()
         self.dino = dino
-        self.game_sound = pygame.mixer.Sound('sounds/foresta_nera.ogg')
+        self.game_sound = pygame.mixer.Sound('sounds/intro.wav')
         self.game_sound.set_volume(0.1)
         self.intro_sound = pygame.mixer.Sound('sounds/intro.wav')
-        self.boom_sound = pygame.mixer.Sound('sounds/boom.ogg')
+        self.boom_sound = pygame.mixer.Sound('sounds/destroyed.wav')
         self.move_sound = pygame.mixer.Sound('sounds/fiu.ogg')
 
     def intro(self):
