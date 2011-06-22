@@ -285,9 +285,9 @@ def main_loop():
                     game.score += 10
                     foe.kill()
                     projectile.kill()
+        shrinked_rect = game.dino.dino_rect.inflate(-40, -40)
         for projectile in Foe.foe_projectiles:
             projectile.move(screen)
-            shrinked_rect = game.dino.dino_rect.inflate(-40, -40)
             if shrinked_rect.colliderect(projectile.rect):
                 game.boom_sound.play()
                 projectile.kill()
