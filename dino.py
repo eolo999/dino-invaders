@@ -130,24 +130,9 @@ class Game(object):
         self.level = Level(1)
         self.num_level = 1
         self.max_levels = 10
-        # Load graphics
-        self.game_font = pygame.font.Font(os.path.join("fonts",
-            "04b_25__.ttf"), 24)
-        self.background = pygame.image.load('images/background_rex.png').convert()
-        # Load sounds
-        self.game_sound = pygame.mixer.Sound('sounds/foresta_nera.ogg')
-        self.game_sound.set_volume(0.1)
-        self.over_sound = pygame.mixer.Sound('sounds/over.wav')
-        self.wound_sound1 = pygame.mixer.Sound('sounds/wound.wav')
-        self.wound_sound2 = pygame.mixer.Sound('sounds/wound.ogg')
-        self.game_sound.set_volume(2)
-        self.boom_sound = pygame.mixer.Sound('sounds/boom.ogg')
-        self.drop1 = pygame.mixer.Sound('sounds/drop1.wav')
-        self.drop2 = pygame.mixer.Sound('sounds/drop2.wav')
-        self.move_sound = pygame.mixer.Sound('sounds/fiu.ogg')
-        # Load "Dino"
         self.dino = Dino()
-        self.game_sound.play(loops=-1)
+        self._init_graphics()
+        self._init_sounds()
 
     def draw_background(self, screen):
         screen.blit(self.background, (0, 0))
@@ -164,7 +149,7 @@ class Game(object):
             255)), (20, 20))
 
     def draw_lives(self, screen):
-        screen.blit(self.game_font.render("L: {0}".format(self.dino.num_lives_left), 0, (255, 255,
+        screen.blit(self.game_font.render("Lives: {0}".format(self.dino.num_lives_left), 0, (255, 255,
             255)), (20, 50))
 
     def next_level(self, screen):
@@ -190,6 +175,22 @@ class Game(object):
         pygame.display.flip()
         pygame.time.wait(200)
         sys.exit()
+
+    def _init_sounds(self):
+        self.game_sound = pygame.mixer.Sound('sounds/foresta_nera.ogg')
+        self.over_sound = pygame.mixer.Sound('sounds/over.wav')
+        self.wound_sound1 = pygame.mixer.Sound('sounds/wound.wav')
+        self.wound_sound2 = pygame.mixer.Sound('sounds/wound.ogg')
+        self.boom_sound = pygame.mixer.Sound('sounds/boom.ogg')
+        self.drop1 = pygame.mixer.Sound('sounds/drop1.wav')
+        self.drop2 = pygame.mixer.Sound('sounds/drop2.wav')
+        self.move_sound = pygame.mixer.Sound('sounds/fiu.ogg')
+        self.game_sound.set_volume(0.1)
+        self.game_sound.play(loops=-1)
+
+    def _init_graphics(self):
+        self.game_font = pygame.font.Font( os.path.join("fonts", "04b_25__.ttf"), 24)
+        self.background = pygame.image.load('images/background_rex.png').convert()
 
 class Dino(pygame.sprite.Sprite):
     def __init__(self):
