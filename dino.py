@@ -243,24 +243,23 @@ def main_loop():
     while True:
         pygame.time.wait(20)
         # Input handlers
+        keys_pressed = pygame.key.get_pressed()
         for event in pygame.event.get():
-            if event.type == pygame.KEYDOWN:
-                if event.key in (pygame.K_ESCAPE, pygame.K_q):
-                    game.shutdown(screen)
-                elif event.key == pygame.K_RIGHT:
-                    game.dino.move(screen, 'right')
-                    game.drop2.play()
-                elif event.key == pygame.K_LEFT:
-                    game.dino.move(screen, 'left')
-                    game.drop1.play()
+            if keys_pressed[pygame.K_ESCAPE] or keys_pressed[pygame.K_q]:
+                game.shutdown(screen)
+            if keys_pressed[pygame.K_RIGHT]:
+                game.dino.move(screen, 'right')
+                game.drop2.play()
+            if keys_pressed[pygame.K_LEFT]:
+                game.dino.move(screen, 'left')
+                game.drop1.play()
                     
-                elif event.key == pygame.K_SPACE:
-                    if game.dino.can_fire:
-                        game.dino.fire(screen)
-                        game.dino.toggle_lock()
-            if event.type == pygame.KEYUP:
-                if event.key == pygame.K_SPACE:
+            if keys_pressed[pygame.K_SPACE]:
+                if game.dino.can_fire:
+                    game.dino.fire(screen)
                     game.dino.toggle_lock()
+            if not keys_pressed[pygame.K_SPACE]:
+                game.dino.toggle_lock()
         # Loop operations
         game.draw_background(screen)
         game.draw_score(screen)
